@@ -3,6 +3,7 @@ package notebook.view;
 import notebook.controller.UserController;
 import notebook.model.User;
 import notebook.util.Commands;
+import notebook.util.mapper.UserValidation;
 
 import java.util.Scanner;
 
@@ -22,7 +23,7 @@ public class UserView {
             if (com == Commands.EXIT) return;
             switch (com) {
                 case CREATE:
-                    User u = createUser();
+                    User u = validUser();
                     userController.saveUser(u);
                     break;
                 case READ:
@@ -35,9 +36,17 @@ public class UserView {
                         throw new RuntimeException(e);
                     }
                     break;
+                case READ_ALL:
+                    System.out.println(userController.readAll());
+                    break;
                 case UPDATE:
                     String userId = prompt("Enter user id: ");
-                    userController.updateUser(userId, createUser());
+                    userController.updateUser(userId, validUser());
+                    break;
+                case DELETE:
+                    String idUser = prompt("Enter user id: ");
+                    userController.deleteUser(idUser);
+                    break;
             }
         }
     }
@@ -48,10 +57,18 @@ public class UserView {
         return in.nextLine();
     }
 
-    private User createUser() {
+
+    private User validUser() {
+        UserValidation userValidation = new UserValidation();
+
         String firstName = prompt("Имя: ");
         String lastName = prompt("Фамилия: ");
         String phone = prompt("Номер телефона: ");
-        return new User(firstName, lastName, phone);
+        User user = new User(firstName, lastName, phone);
+        if (userValidation.valid(user)){
+            return user;
+        } else {
+            throw new IllegalArgumentException("Введённые данные не корректны");
+        }
     }
 }
